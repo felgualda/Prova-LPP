@@ -41,35 +41,29 @@ int main(int argc, char *argv[]) {
     t_inicial = MPI_Wtime();
 
     if (meu_ranque == 0) { 
-        // --- MESTRE: Distribuição Inicial ---
         for (dest=1, inicio=3; dest < num_procs; dest++, inicio += TAMANHO) {
             tag = (inicio > n) ? 98 : 1;
             MPI_Ssend(&inicio, 1, MPI_LONG, dest, tag, MPI_COMM_WORLD);
         }
 
-        // --- MESTRE: Gerenciamento da Bolsa ---
         while (stop < (num_procs-1)) {
-            // Recebe o resultado de qualquer escravo que terminar
             MPI_Recv(&recebido, 1, MPI_LONG, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
             total += recebido;
             dest = estado.MPI_SOURCE;
 
             if (inicio > n) {
-                tag = 99; // Poison pill (finalização)
+                tag = 99;
                 stop++;
             } else {
                 tag = 1;
             }
 
-            // Envia a próxima tarefa síncronamente
             MPI_Ssend(&inicio, 1, MPI_LONG, dest, tag, MPI_COMM_WORLD);
             inicio += TAMANHO;
         }
     } 
     else { 
-        // --- ESCRAVO ---
         while (1) {
-            // Recebe tarefa bloqueante
             MPI_Recv(&inicio, 1, MPI_LONG, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
 
             if (estado.MPI_TAG == 99) break;
@@ -80,7 +74,6 @@ int main(int argc, char *argv[]) {
                     if (primo(j)) cont++;
                 }
             }
-            // Envia resultado síncronamente
             long int resultado_escravo = cont;
             MPI_Ssend(&resultado_escravo, 1, MPI_LONG, raiz, 1, MPI_COMM_WORLD);
         } 
@@ -89,7 +82,7 @@ int main(int argc, char *argv[]) {
 
     if (meu_ranque == 0) {
         t_final = MPI_Wtime();
-        total += 1; // Soma o número 2
+        total += 1; 
         printf("Quant. de primos entre 1 e %ld: %ld \n", n, total);
         printf("Tempo de execucao: %1.3f \n", t_final - t_inicial);           
     }

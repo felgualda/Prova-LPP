@@ -38,26 +38,21 @@ int main(int argc, char *argv[]) {
         return(1);
     }
 
-    // --- SINCRONIZAÇÃO CRÍTICA PARA RSEND ---
     if (meu_ranque != 0) {
-        // Escravos já postam o primeiro Irecv antes de tudo
         MPI_Irecv(&inicio, 1, MPI_INT, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
     }
     
-    // Todos esperam aqui. Isso garante que o Irecv acima foi postado por todos os escravos.
     MPI_Barrier(MPI_COMM_WORLD);
 
     t_inicial = MPI_Wtime();
 
     if (meu_ranque == 0) { 
-        // Distribuição inicial com Ready Send (Rsend)
         for (dest=1, inicio=3; dest < num_procs; dest++, inicio += TAMANHO) {
             tag = (inicio > n) ? 98 : 1;
             MPI_Rsend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
         }
 
         while (stop < (num_procs-1)) {
-            // Mestre recebe o resultado
             MPI_Irecv(&cont, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &estado);
             
@@ -71,15 +66,12 @@ int main(int argc, char *argv[]) {
                 tag = 1;
             }
 
-            // O escravo já postou o Irecv (veja no loop do escravo), então podemos usar Rsend
             MPI_Rsend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
             inicio += TAMANHO;
         }
     } 
     else { 
-        // Escravos
         while (1) {
-            // O primeiro Irecv foi postado ANTES do Barrier. Os próximos são postados aqui.
             MPI_Wait(&request, &estado);
 
             if (estado.MPI_TAG == 99) break;
@@ -91,11 +83,8 @@ int main(int argc, char *argv[]) {
                 }
             }
             
-            // Antes de mandar o resultado, o escravo já abre o Irecv para a PRÓXIMA tarefa.
-            // Isso garante que quando o mestre receber o resultado e der um Rsend, o escravo já esteja pronto.
             MPI_Irecv(&inicio, 1, MPI_INT, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
             
-            // Envia o resultado para o mestre (usamos Send comum para o mestre)
             MPI_Send(&cont, 1, MPI_INT, raiz, 1, MPI_COMM_WORLD);
         } 
         t_final = MPI_Wtime();

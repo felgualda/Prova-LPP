@@ -27,27 +27,32 @@ int meu_ranque, num_procs, inicio, salto;
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &meu_ranque);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);	
-    	t_inicial = MPI_Wtime();
-    	inicio = 3 + meu_ranque*2;
-    	salto = num_procs*2;
+    t_inicial = MPI_Wtime();
+    inicio = 3 + meu_ranque*2;
+    salto = num_procs*2;
+
 	for (i = inicio; i <= n; i += salto) 
 		if(primo(i) == 1) cont++;
 		
 	if(num_procs > 1) {
 		if (meu_ranque != 0) {
-    MPI_Send(&cont, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 
-} else {
-    total = cont; 
-    MPI_Request request; // MUDANÇA********************************
+    		MPI_Send(&cont, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 
-    for (int origem = 1; origem < num_procs; origem++) {
-        int recebido;
-        MPI_Irecv(&recebido, 1, MPI_INT, origem, 0, MPI_COMM_WORLD, &request); // MUDANÇA********************************
-        MPI_Wait(&request, MPI_STATUS_IGNORE); // MUDANÇA********************************
-        total += recebido;
-    }
-}
+		} else {
+			total = cont; 
+			MPI_Request requests[num_procs]; // MUDANÇA********************************
+			int recebidos[num_procs];		// MUDANÇA********************************
+
+			for (int origem = 1; origem < num_procs; origem++) {
+				MPI_Irecv(&recebidos[origem], 1, MPI_INT, origem, 0, MPI_COMM_WORLD, &requests[origem]); // MUDANÇA********************************
+			}
+
+			for (int origem = 1; origem < num_procs; origem++) {
+				MPI_Wait(&requests[origem], MPI_STATUS_IGNORE); // MUDANÇA********************************
+				total += recebidos[origem];						// MUDANÇA********************************
+			}
+		}
 	} else {
 		total = cont;
 	}

@@ -35,7 +35,6 @@ MPI_Status estado;
 	for (i = inicio; i <= n; i += salto) 
 		if(primo(i) == 1) cont++;
 		
-/* RECURSIVE DOUBLING: Rsend + Irecv (Caso 10) */
     long int acumulado = cont; 
 
 
@@ -43,8 +42,6 @@ MPI_Status estado;
         if ((meu_ranque / i_arv) % 2 == 0) {
             destino = meu_ranque + i_arv;
             if (destino < num_procs) {
-                /* Grupo A: Envia primeiro. 
-                   CUIDADO: O Rsend só funciona se o destino já estiver no Recv! */
                 MPI_Rsend(&acumulado, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD);
                 MPI_Recv(&recebido, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD, &estado);
                 acumulado += recebido;
@@ -52,7 +49,6 @@ MPI_Status estado;
         } else {
             destino = meu_ranque - i_arv;
             if (destino >= 0) {
-                /* Grupo B: Recebe primeiro para o Rsend do parceiro não falhar */
                 MPI_Recv(&recebido, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD, &estado);
                 MPI_Rsend(&acumulado, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD);
                 acumulado += recebido;

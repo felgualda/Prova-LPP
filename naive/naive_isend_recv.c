@@ -35,9 +35,9 @@ int meu_ranque, num_procs, inicio, salto;
 		
 	if(num_procs > 1) {
 		if (meu_ranque != 0) {
-    MPI_Request request; // Declara o "ticket" do envio
+    MPI_Request request;
 	MPI_Isend(&cont, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &request);              // MUDANÇA********************************
-	MPI_Wait(&request, MPI_STATUS_IGNORE); // Garante que o envio terminou	
+	MPI_Wait(&request, MPI_STATUS_IGNORE);
 
 } else {
     total = cont;

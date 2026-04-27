@@ -35,19 +35,22 @@ int meu_ranque, num_procs, inicio, salto;
 		
 	if(num_procs > 1) {
 		if (meu_ranque != 0) {
-    MPI_Request request; // Declara o "ticket" do envio
+    MPI_Request request;
 	MPI_Isend(&cont, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &request);              // MUDANÇA********************************
-	MPI_Wait(&request, MPI_STATUS_IGNORE); // Garante que o envio terminou	
+	MPI_Wait(&request, MPI_STATUS_IGNORE);
 
 } else {
     total = cont; 
-    MPI_Request request; // MUDANÇA********************************
+	MPI_Request requests[num_procs]; 
+    int recebidos[num_procs];
+
+	for (int origem = 1; origem < num_procs; origem++) {
+        MPI_Irecv(&recebidos[origem], 1, MPI_INT, origem, 0, MPI_COMM_WORLD, &requests[origem]);
+    }
 
     for (int origem = 1; origem < num_procs; origem++) {
-        int recebido;
-        MPI_Irecv(&recebido, 1, MPI_INT, origem, 0, MPI_COMM_WORLD, &request); // MUDANÇA********************************
-        MPI_Wait(&request, MPI_STATUS_IGNORE); // MUDANÇA********************************
-        total += recebido;
+        MPI_Wait(&requests[origem], MPI_STATUS_IGNORE); 
+        total += recebidos[origem];
     }
 }
 	} else {

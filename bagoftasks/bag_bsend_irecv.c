@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &meu_ranque);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-    // Ajuste do tamanho do buffer para comportar mensagens de todos os processos
     tam_buffer = num_procs * (MPI_BSEND_OVERHEAD + sizeof(int));
     buffer = (void *) malloc(tam_buffer);
     MPI_Buffer_attach(buffer, tam_buffer);
@@ -49,14 +48,12 @@ int main(int argc, char *argv[]) {
     t_inicial = MPI_Wtime();
 
     if (meu_ranque == 0) { 
-        // Distribuição inicial
         for (dest=1, inicio=3; dest < num_procs; dest++, inicio += TAMANHO) {
             tag = (inicio > n) ? 98 : 1;
             MPI_Bsend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
         }
 
         while (stop < (num_procs-1)) {
-            // Mestre recebe o RESULTADO (cont) de QUALQUER SOURCE
             MPI_Irecv(&cont, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &estado);
             
@@ -70,14 +67,12 @@ int main(int argc, char *argv[]) {
                 tag = 1;
             }
 
-            // Envia a PRÓXIMA TAREFA (inicio) para o escravo que acabou de liberar
             MPI_Bsend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
             inicio += TAMANHO;
         }
     } 
     else { 
         while (1) {
-            // Escravo recebe a TAREFA (inicio) vinda do mestre
             MPI_Irecv(&inicio, 1, MPI_INT, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &estado);
 
@@ -89,7 +84,6 @@ int main(int argc, char *argv[]) {
                     if (primo(i) == 1) cont++;
                 }
             }
-            // Envia o RESULTADO de volta usando Bsend
             MPI_Bsend(&cont, 1, MPI_INT, raiz, 1, MPI_COMM_WORLD);
         } 
         t_final = MPI_Wtime();

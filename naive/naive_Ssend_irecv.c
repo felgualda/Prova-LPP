@@ -15,7 +15,7 @@ int primo (long int n) {
 int main(int argc, char *argv[]) {
 double t_inicial, t_final;
 int cont = 0, total = 0, pot2, destino, etiq = 1, i_arvore = 0;
-long int i, n, recebido; // Para receber a contagem parcial dos outros
+long int i, n, recebido;
 MPI_Status estado;
 
 int meu_ranque, num_procs, inicio, salto;
@@ -35,7 +35,6 @@ int meu_ranque, num_procs, inicio, salto;
 	for (i = inicio; i <= n; i += salto) 
 		if(primo(i) == 1) cont++;
 		
-/* RECURSIVE DOUBLING: A 'dobradura' da soma */
     long int acumulado = cont; 
 	MPI_Request request; // MUDANÇA********************************
 
@@ -44,7 +43,6 @@ int meu_ranque, num_procs, inicio, salto;
         if ((meu_ranque / i_arvore) % 2 == 0) {
             destino = meu_ranque + i_arvore;
             if (destino < num_procs) {
-                // Envia primeiro, recebe depois (Garante o par para o Ssend)
                 MPI_Ssend(&acumulado, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD); // MUDANÇA********************************
                 MPI_Irecv(&recebido, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD, &request);
 				MPI_Wait(&request, MPI_STATUS_IGNORE); // MUDANÇA********************************
@@ -53,7 +51,6 @@ int meu_ranque, num_procs, inicio, salto;
         } else {
             destino = meu_ranque - i_arvore;
             if (destino >= 0) {
-                // Recebe primeiro para liberar o Ssend do parceiro
                 MPI_Irecv(&recebido, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD, &request); // MUDANÇA********************************
                 MPI_Ssend(&acumulado, 1, MPI_LONG, destino, etiq, MPI_COMM_WORLD);
 				MPI_Wait(&request, MPI_STATUS_IGNORE); // MUDANÇA********************************
