@@ -67,9 +67,9 @@ int main(int argc, char *argv[]) {
             MPI_Recv(&inicio, 1, MPI_INT, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
             if (estado.MPI_TAG != 99 && estado.MPI_TAG != 98) {
                 for (i = inicio, cont=0; i < (inicio + TAMANHO) && i < n; i+=2) 
-                            if (primo(i) == 1)
-                        cont++;
-                MPI_Send(&cont, 1, MPI_INT, raiz, tag, MPI_COMM_WORLD);
+                    if (primo(i) == 1)
+                    cont++;
+                    MPI_Send(&cont, 1, MPI_INT, raiz, tag, MPI_COMM_WORLD);
             } else if (estado.MPI_TAG == 98) {
                 MPI_Send(&cont, 1, MPI_INT, raiz, tag, MPI_COMM_WORLD);
             }

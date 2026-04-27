@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     int i, n;
     int meu_ranque, num_procs, inicio, dest, raiz=0, tag=1, stop=0;
     MPI_Status estado;
-    MPI_Request request; // Gerencia as operações não-bloqueantes
+    MPI_Request request;
 
     if (argc < 2) {
         printf("Entre com o valor do maior inteiro como parâmetro.\n");
@@ -40,14 +40,12 @@ int main(int argc, char *argv[]) {
     t_inicial = MPI_Wtime();
 
     if (meu_ranque == 0) { 
-        // --- MESTRE: Distribuição inicial com Isend ---
         for (dest=1, inicio=3; dest < num_procs; dest++, inicio += TAMANHO) {
             tag = (inicio > n) ? 98 : 1;
             MPI_Isend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD, &request);
-            MPI_Wait(&request, MPI_STATUS_IGNORE); // Garante envio antes de alterar 'inicio'
+            MPI_Wait(&request, MPI_STATUS_IGNORE);
         }
 
-        // --- MESTRE: Bolsa de tarefas com Irecv e Isend ---
         while (stop < (num_procs-1)) {
             MPI_Irecv(&cont, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &estado);
@@ -68,7 +66,6 @@ int main(int argc, char *argv[]) {
         }
     } 
     else { 
-        // --- ESCRAVO: Recebimento e envio não-bloqueantes ---
         while (1) {
             MPI_Irecv(&inicio, 1, MPI_INT, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &estado);
@@ -82,7 +79,6 @@ int main(int argc, char *argv[]) {
                 }
             }
             
-            // Envia o resultado de volta
             MPI_Isend(&cont, 1, MPI_INT, raiz, 1, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, MPI_STATUS_IGNORE);
         } 
@@ -91,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     if (meu_ranque == 0) {
         t_final = MPI_Wtime();
-        total += 1; // Soma o número 2
+        total += 1;
         printf("Quant. de primos entre 1 e %d: %d \n", n, total);
         printf("Tempo de execucao: %1.3f \n", t_final - t_inicial);           
     }
