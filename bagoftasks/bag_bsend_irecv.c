@@ -4,6 +4,7 @@
 #include <math.h>
 
 #define TAMANHO 500000
+#define TAM 4
 
 int primo (int n) {
     int i;
@@ -33,9 +34,10 @@ int main(int argc, char *argv[]) {
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &meu_ranque);
+    MPI_Pack_size(TAM, MPI_INT, MPI_COMM_WORLD, &tam_buffer); // MUDANÇA********************************
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-    tam_buffer = num_procs * (MPI_BSEND_OVERHEAD + sizeof(int));
+    tam_buffer = num_procs * (MPI_BSEND_OVERHEAD + tam_buffer);
     buffer = (void *) malloc(tam_buffer);
     MPI_Buffer_attach(buffer, tam_buffer);
 

@@ -32,7 +32,7 @@ void *meu_buffer;
 	MPI_Comm_rank(MPI_COMM_WORLD, &meu_ranque);
 	MPI_Pack_size(TAM, MPI_INT, MPI_COMM_WORLD, &tam_buffer); // MUDANÇA********************************
 	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-    		tam_buffer = MPI_BSEND_OVERHEAD + sizeof(int);   // MUDANÇA********************************
+    		tam_buffer = MPI_BSEND_OVERHEAD + tam_buffer;   // MUDANÇA********************************
    			buffer = (void *) malloc(tam_buffer);                         // MUDANÇA********************************
     		MPI_Buffer_attach(buffer, tam_buffer);            // MUDANÇA********************************
     	t_inicial = MPI_Wtime();

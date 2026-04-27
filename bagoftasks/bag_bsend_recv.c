@@ -14,7 +14,7 @@ int primo (int n) {
         return 1;
 }
 
-int main(int argc, char *argv[]) { /* mpi_primosbag.c  */
+int main(int argc, char *argv[]) {
 
     double t_inicial, t_final;
     int cont = 0, total = 0;
@@ -24,11 +24,7 @@ int main(int argc, char *argv[]) { /* mpi_primosbag.c  */
 
     void *buffer;
     int tam_buffer; // MUDANÇA********************************
-    void *meu_buffer;
-    
 
-
-    /* Verifica o número de argumentos passados */
         if (argc < 2) {
         printf("Entre com o valor do maior inteiro como parâmetro para o programa.\n");
                 return 0;
@@ -39,11 +35,10 @@ int main(int argc, char *argv[]) { /* mpi_primosbag.c  */
         MPI_Comm_rank(MPI_COMM_WORLD, &meu_ranque);
         MPI_Pack_size(TAM, MPI_INT, MPI_COMM_WORLD, &tam_buffer); // MUDANÇA********************************
         MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-            tam_buffer = MPI_BSEND_OVERHEAD + sizeof(int);   // MUDANÇA********************************
+            tam_buffer = MPI_BSEND_OVERHEAD + tam_buffer;   // MUDANÇA********************************
    			buffer = (void *) malloc(tam_buffer);                         // MUDANÇA********************************
     		MPI_Buffer_attach(buffer, tam_buffer);            // MUDANÇA********************************
 
-    /* Se houver menos que dois processos aborta */
     if (num_procs < 2) {
         printf("Este programa deve ser executado com no mínimo dois processos.\n");
         MPI_Abort(MPI_COMM_WORLD, 1);
